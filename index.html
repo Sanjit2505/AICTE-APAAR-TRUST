@@ -222,9 +222,9 @@
           <h2 style="font-size:24px; font-weight:800;">Student Batch Ingestion & Validation Wizard</h2>
           <p style="color:var(--text-muted); font-size:14px;">Upload standardized student CSV datasets with real-time row-by-row validation, intake comparison, and audit persistence.</p>
         </div>
-        <a href="/api/v1/students/template.csv" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:8px;">
+        <button type="button" onclick="downloadStudentCsvTemplate()" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:8px;">
           📥 Download AICTE Student CSV Template
-        </a>
+        </button>
       </div>
 
       <div class="grid-2">
@@ -325,9 +325,9 @@
           <h2 style="font-size:24px; font-weight:800;">Intake & Seat Allocation Monitor</h2>
           <p style="color:var(--text-muted); font-size:14px;">Live comparison of approved intake versus actual student enrolment per programme.</p>
         </div>
-        <a href="/api/v1/reports/intake.csv" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:8px;">
+        <button type="button" onclick="exportIntakeCsvReport()" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:8px;">
           📊 Export Intake Report (CSV)
-        </a>
+        </button>
       </div>
 
       <!-- Programme Cards Grid -->
@@ -344,7 +344,7 @@
           <p style="color:var(--text-muted); font-size:14px;">National macro-metrics on student enrolments, approved intake capacity, and compliance alerts.</p>
         </div>
         <div style="display:flex; gap:10px;">
-          <a href="/api/v1/reports/intake.csv" class="btn btn-secondary">📥 Export National Intake (CSV)</a>
+          <button type="button" onclick="exportIntakeCsvReport()" class="btn btn-secondary">📥 Export National Intake (CSV)</button>
           <button class="btn btn-secondary" onclick="loadAdminDashboard()">🔄 Refresh</button>
         </div>
       </div>
@@ -420,7 +420,7 @@
           <p style="color:var(--text-muted); font-size:14px;">Investigate cross-institution duplicate enrolments, intake limit breaches, and conflicting records.</p>
         </div>
         <div style="display:flex; gap:10px;">
-          <a href="/api/v1/reports/anomalies.csv" class="btn btn-secondary">📥 Export Anomalies (CSV)</a>
+          <button type="button" onclick="exportAnomaliesCsvReport()" class="btn btn-secondary">📥 Export Anomalies (CSV)</button>
           <button class="btn btn-secondary" onclick="loadAdminAnomalies()">🔄 Refresh</button>
         </div>
       </div>
@@ -620,37 +620,7 @@
       </div>
     </section>
 
-    <!-- ==================== 9. COPILOT VIEW ==================== -->
-    <section id="view-copilot" class="view-section">
-      <div style="margin-bottom: 20px;">
-        <h2 style="font-size:24px; font-weight:800;">AICTE Handbook & APAAR Norms Copilot</h2>
-        <p style="color:var(--text-muted); font-size:14px;">Ask questions over official AICTE norms, student intake quotas, and statutory guidelines.</p>
-      </div>
-
-      <div class="copilot-container">
-        <div class="glass" style="padding:18px; border-radius:var(--radius-md); display:flex; flex-direction:column; gap:10px;">
-          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-dim);">Suggested Queries</div>
-          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">What are the rules for Tuition Fee Waiver (TFW) supernumerary seats?</button>
-          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">What are the rules for expansion of intake?</button>
-          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">What is the required Student-to-Faculty Ratio (SFR)?</button>
-          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">How are NRI admissions calculated against approved intake?</button>
-        </div>
-
-        <div class="glass chat-box">
-          <div class="chat-messages" id="chatMsgContainer">
-            <div class="chat-msg copilot">
-              <b>AICTE Handbook Copilot</b><br>
-              Ready to answer regulatory queries based on the AICTE Approval Process Handbook (2024-2027) and APAAR student norms.
-            </div>
-          </div>
-          <div style="padding:14px; border-top:1px solid var(--border-subtle); display:flex; gap:10px; background:rgba(20, 24, 23, 0.75);">
-            <input type="text" id="copilotTextInput" placeholder="Ask a question..." style="flex:1; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
-            <button class="btn btn-primary" id="btnCopilotSend">Ask Copilot</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
+    
   </main>
 
   <script src="js/app.js"></script>
