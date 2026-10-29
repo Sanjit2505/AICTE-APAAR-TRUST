@@ -21,10 +21,12 @@ from app.services.verification_adapters import (
 from app.services.graph_service import detect_cross_institution_anomalies
 from app.services.rag_copilot import query_handbook_copilot
 from app.services.metrics_service import get_evaluation_metrics
+from app.api_v1 import router as api_v1_router
+from app.init_student_db import seed_student_foundations
 
 app = FastAPI(
-    title="AICTE Trust Layer API",
-    description="Real-Time AI Verification and Tamper-Evident Audit Platform for AICTE Approvals",
+    title="AICTE APAAR Student Data Management & Verification Platform",
+    description="Centralized AICTE APAAR Student Academic Record Ingestion, Intake Compliance, and Verifiable Credentials Platform",
     version="2.0.0"
 )
 
@@ -36,15 +38,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount API v1 Router
+app.include_router(api_v1_router)
+
 # Static and Upload mounting
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 FRONTEND_DIR = BASE_DIR.parent / "frontend"
+ROOT_DIR = BASE_DIR.parent
+
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="frontend_static")
+    if (FRONTEND_DIR / "css").exists():
+        app.mount("/css", StaticFiles(directory=str(FRONTEND_DIR / "css")), name="frontend_css")
+    if (FRONTEND_DIR / "js").exists():
+        app.mount("/js", StaticFiles(directory=str(FRONTEND_DIR / "js")), name="frontend_js")
+elif ROOT_DIR.exists():
+    if (ROOT_DIR / "css").exists():
+        app.mount("/css", StaticFiles(directory=str(ROOT_DIR / "css")), name="frontend_css")
+    if (ROOT_DIR / "js").exists():
+        app.mount("/js", StaticFiles(directory=str(ROOT_DIR / "js")), name="frontend_js")
+
 
 @app.on_event("startup")
 def startup_event():
     ensure_master_setup()
+    try:
+        seed_student_foundations()
+    except Exception as e:
+        print(f"Startup notice on student foundations: {e}")
 
 # Request Models
 class CollegeRegisterRequest(BaseModel):
@@ -92,12 +113,19 @@ def health_check():
     try:
         inst_count = fetch_one("SELECT COUNT(*) as count FROM institutions")["count"] or 0
         app_count = fetch_one("SELECT COUNT(*) as count FROM applications")["count"] or 0
+        student_count = fetch_one("SELECT COUNT(*) as count FROM students")["count"] or 0
+        programme_count = fetch_one("SELECT COUNT(*) as count FROM programmes")["count"] or 0
+        audit_count = fetch_one("SELECT COUNT(*) as count FROM audit_log")["count"] or 0
         return {
             "status": "healthy",
+            "system": "AICTE APAAR Student Data Management & Verification Platform",
+            "version": "2.0.0",
             "database": "connected (MySQL 8.0)",
             "database_name": "aicte_trust_layer",
-            "real_institutions_count": inst_count,
-            "real_applications_count": app_count,
+            "institutions_count": inst_count,
+            "students_count": student_count,
+            "programmes_count": programme_count,
+            "audit_ledger_entries": audit_count,
             "timestamp": datetime.utcnow().isoformat()
         }
     except Exception as e:

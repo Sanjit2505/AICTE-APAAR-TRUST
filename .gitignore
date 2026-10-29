@@ -57,3 +57,8 @@ backend/uploads/*.temp.*
 backend/uploads/*.ela.png
 backend/uploads/infra_*
 backend/uploads/app_*
+
+# Exclude all markdown documentation
+*.md
+*.MD
+

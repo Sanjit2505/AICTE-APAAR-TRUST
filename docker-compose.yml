@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # MySQL 8.0 Database Service
+  db:
+    image: mysql:8.0
+    container_name: aicte_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword2026
+      MYSQL_DATABASE: aicte_trust_layer
+      MYSQL_USER: aicte_admin
+      MYSQL_PASSWORD: aictepassword2026
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword2026"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # AICTE APAAR Web Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aicte_apaar_app
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - ENVIRONMENT=production
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=aicte_admin
+      - MYSQL_PASSWORD=aictepassword2026
+      - MYSQL_DB=aicte_trust_layer
+      - SECRET_KEY=prod-secret-aicte-apaar-key-2026-v2
+      - APAAR_LIVE_MODE=false
+    ports:
+      - "8000:8000"
+    volumes:
+      - app_uploads:/app/backend/uploads
+
+volumes:
+  mysql_data:
+  app_uploads:
+

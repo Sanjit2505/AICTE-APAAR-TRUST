@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AICTE APAAR | Student Data Management & Verification Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="glass-header">
+    <div class="logo-group">
+      <div class="emblem-icon">🎓</div>
+      <div class="logo-text">
+        <h1>AICTE APAAR Trust</h1>
+        <span>Government of India &bull; Centralized Student Data & Intake Verification Platform</span>
+      </div>
+    </div>
+
+    <!-- Active User & Role Controls -->
+    <div id="authHeaderControls" style="display:flex; align-items:center; gap:16px;">
+      <div id="liveDbStatus" style="font-size:12px; color:var(--accent-emerald); display:flex; align-items:center; gap:6px;">
+        <span class="dot"></span> MySQL 8.0 & SHA-256 Ledger Live
+      </div>
+
+      <div id="userProfileBadge" style="display:none; align-items:center; gap:12px;">
+        <div class="persona-badge">
+          <span class="dot"></span>
+          <span id="headerUserName">Logged In</span>
+          <span id="headerUserRole" style="font-weight:700; color:var(--c-ivory); background:rgba(85, 115, 115, 0.28); padding:2px 8px; border-radius:4px; font-size:11px;">ROLE</span>
+        </div>
+        <button id="btnLogout" class="btn btn-secondary" style="padding:6px 14px; font-size:12px;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Bar (Visible once logged in) -->
+  <div id="appNavTabsContainer" style="display:none; padding:10px 32px; background:rgba(13, 13, 13, 0.85); border-bottom:1px solid var(--border-subtle);">
+    <nav class="nav-tabs" id="appNavTabs">
+      <!-- Injected dynamically based on role -->
+    </nav>
+  </div>
+
+  <main style="max-width:1440px; margin:0 auto; padding:24px 32px;">
+
+    <!-- ==================== 1. AUTHENTICATION & LOGIN SCREEN ==================== -->
+    <section id="view-auth" class="view-section active">
+      <div style="max-width:480px; margin:40px auto;">
+        
+        <div style="text-align:center; margin-bottom:28px;">
+          <div style="display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; border-radius:50%; background:rgba(85, 115, 115, 0.22); border:1px solid rgba(85, 115, 115, 0.45); margin-bottom:12px; font-size:32px;">
+            🎓
+          </div>
+          <h2 style="font-size:26px; font-weight:800; letter-spacing:-0.5px; color:var(--c-ivory);">AICTE APAAR Trust Portal</h2>
+          <p style="color:var(--text-muted); font-size:13px; margin-top:4px;">
+            National Student Academic Identity & Intake Verification Platform
+          </p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass" id="loginCardBox" style="padding:32px; border-radius:var(--radius-lg); border:1px solid rgba(85, 115, 115, 0.35); box-shadow:0 0 25px rgba(85, 115, 115, 0.2);">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+            <span style="font-size:24px;">🔐</span>
+            <div>
+              <h3 style="font-size:18px; font-weight:700; color:var(--c-ivory);">Portal Sign In</h3>
+              <span style="font-size:12px; color:var(--text-dim);">Enter your registered official email & password</span>
+            </div>
+          </div>
+
+          <!-- Quick Persona Auto-Fill Chips -->
+          <div style="margin-bottom:18px; background:rgba(13, 13, 13, 0.65); padding:10px; border-radius:8px; border:1px solid var(--border-subtle);">
+            <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px; font-weight:700;">Demo Login Shortcuts:</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-secondary" onclick="fillCredentials('admin')" style="padding:4px 10px; font-size:11px;">🏛️ AICTE Admin</button>
+              <button type="button" class="btn btn-secondary" onclick="fillCredentials('college')" style="padding:4px 10px; font-size:11px;">🎓 College (DTI)</button>
+              <button type="button" class="btn btn-secondary" onclick="fillCredentials('verifier')" style="padding:4px 10px; font-size:11px;">🔍 Verifier (TCS)</button>
+            </div>
+          </div>
+
+          <form id="formUnifiedLogin" style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Official Email Address</label>
+              <input type="email" id="loginEmail" placeholder="Enter registered official email" required style="width:100%; padding:11px; border-radius:8px; font-size:14px;">
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Password</label>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required style="width:100%; padding:11px; border-radius:8px; font-size:14px;">
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:6px; padding:12px; font-size:14px; font-weight:700;">
+              Secure Sign In &rarr;
+            </button>
+          </form>
+
+          <div style="margin-top:20px; text-align:center; font-size:13px; color:var(--text-muted);">
+            New educational institution? <a href="#" id="linkShowRegister" style="color:var(--c-ice); font-weight:600;">Register Institution</a>
+          </div>
+        </div>
+
+        <!-- Registration Card (Hidden by default, shown when linkShowRegister is clicked) -->
+        <div class="glass" id="collegeRegisterBox" style="display:none; padding:32px; border-radius:var(--radius-lg); border:1px solid var(--border-subtle);">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <span style="font-size:24px;">🏛️</span>
+            <div>
+              <h3 style="font-size:18px; font-weight:700; color:var(--accent-cyan);">Register New Institution</h3>
+              <span style="font-size:12px; color:var(--text-dim);">Onboard technical college into AICTE repository</span>
+            </div>
+          </div>
+
+          <form id="formRegisterInstitution" style="display:flex; flex-direction:column; gap:10px;">
+            <div>
+              <label style="font-size:11px; color:var(--text-muted);">Institution Name</label>
+              <input type="text" id="regName" placeholder="Enter institution name" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div>
+                <label style="font-size:11px; color:var(--text-muted);">AICTE Permanent ID</label>
+                <input type="text" id="regAicteId" placeholder="e.g. 1-123456789" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:var(--text-muted);">Sponsoring Trust</label>
+                <input type="text" id="regTrust" placeholder="e.g. Educational Trust" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div>
+                <label style="font-size:11px; color:var(--text-muted);">State</label>
+                <input type="text" id="regState" placeholder="Enter State" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:var(--text-muted);">District</label>
+                <input type="text" id="regDistrict" placeholder="Enter District" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+              </div>
+            </div>
+            <div>
+              <label style="font-size:11px; color:var(--text-muted);">Campus Address</label>
+              <input type="text" id="regAddress" placeholder="Full postal campus address" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div>
+                <label style="font-size:11px; color:var(--text-muted);">Admin Name</label>
+                <input type="text" id="regAdminName" placeholder="Registrar / Director Name" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size:11px; color:var(--text-muted);">Admin Email</label>
+                <input type="email" id="regAdminEmail" placeholder="admin@institute.edu" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+              </div>
+            </div>
+            <div>
+              <label style="font-size:11px; color:var(--text-muted);">Admin Password</label>
+              <input type="password" id="regAdminPassword" placeholder="Create a strong password" required style="width:100%; padding:8px; border-radius:6px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:12px;">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:6px;">
+              <button type="submit" class="btn btn-success" style="flex:1; padding:10px; font-size:13px;">Create Institution Account</button>
+              <button type="button" id="btnCancelRegister" class="btn btn-secondary" style="padding:10px; font-size:13px;">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 2. INSTITUTION PORTAL: STUDENT RECORDS ==================== -->
+    <section id="view-institution-students" class="view-section">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size:24px; font-weight:800;" id="instPortalTitle">Student Academic Records</h2>
+          <p style="color:var(--text-muted); font-size:14px;">Browse, filter, and audit verified student records registered under your institution.</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="showView('view-institution-upload')">📤 Ingest Student Batch (CSV)</button>
+          <button class="btn btn-secondary" onclick="loadInstitutionStudents()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Filters & Search Toolbar -->
+      <div class="glass" style="padding:16px 20px; border-radius:var(--radius-md); margin-bottom:20px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+        <div style="flex:1; min-width:240px;">
+          <input type="text" id="searchStudentInput" placeholder="Search by Student Name, Roll No, or APAAR ID..." style="width:100%; padding:9px 12px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+        </div>
+        <div style="width:200px;">
+          <select id="filterStudentProgramme" style="width:100%; padding:9px 12px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+            <option value="">All Programmes</option>
+          </select>
+        </div>
+        <div style="width:160px;">
+          <select id="filterStudentYear" style="width:100%; padding:9px 12px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+            <option value="">All Academic Years</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" onclick="applyStudentFilters()">Filter</button>
+      </div>
+
+      <!-- Student Records Table -->
+      <div class="glass" style="border-radius:var(--radius-md); overflow:hidden;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Roll No</th>
+              <th>Student Name</th>
+              <th>APAAR ID</th>
+              <th>Programme</th>
+              <th>Category</th>
+              <th>Seat Quota</th>
+              <th>Status</th>
+              <th>Attestation</th>
+              <th>Record Hash</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr><td colspan="9" style="text-align:center; color:var(--text-dim);">Loading student records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 3. INSTITUTION PORTAL: CSV UPLOAD WIZARD ==================== -->
+    <section id="view-institution-upload" class="view-section">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size:24px; font-weight:800;">Student Batch Ingestion & Validation Wizard</h2>
+          <p style="color:var(--text-muted); font-size:14px;">Upload standardized student CSV datasets with real-time row-by-row validation, intake comparison, and audit persistence.</p>
+        </div>
+        <a href="/api/v1/students/template.csv" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:8px;">
+          📥 Download AICTE Student CSV Template
+        </a>
+      </div>
+
+      <div class="grid-2">
+        
+        <!-- Step 1: Upload Box -->
+        <div class="glass" style="padding:24px; border-radius:var(--radius-md); display:flex; flex-direction:column; gap:16px;">
+          <h3 style="font-size:17px; font-weight:700; color:var(--accent-cyan);">1. Select Academic Year & Upload CSV</h3>
+          
+          <form id="formStudentCsvUpload" style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Academic Year</label>
+              <select id="selectUploadAcademicYear" style="width:100%; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <div style="border:2px dashed var(--border-glow); padding:28px 18px; border-radius:var(--radius-md); text-align:center; background:rgba(20, 24, 23, 0.55);">
+              <span style="font-size:36px; display:block; margin-bottom:8px;">📄</span>
+              <div style="font-size:14px; font-weight:600; color:var(--c-ivory); margin-bottom:4px;">Drag & Drop or Choose Student CSV File</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">UTF-8 encoded CSV matching AICTE specification</div>
+              <input type="file" id="studentCsvFileInput" accept=".csv" required style="display:inline-block; font-size:12px; color:var(--text-muted);">
+            </div>
+
+            <button type="submit" id="btnUploadCsvScan" class="btn btn-primary" style="padding:12px; font-size:14px; font-weight:600;">
+              🔍 Parse & Validate Student Batch
+            </button>
+          </form>
+
+          <div style="font-size:12px; color:var(--text-dim); line-height:1.6; background:rgba(0,0,0,0.3); padding:12px; border-radius:8px;">
+            🛡️ <b>Automated Validation Pipeline:</b>
+            <ul style="margin-left:18px; margin-top:4px;">
+              <li>Mandatory field presence (Roll No, Name, DOB, Gender, Category).</li>
+              <li>APAAR 12-digit format & check digit validation.</li>
+              <li>Formula injection sanitization (=, +, -, @ escaped).</li>
+              <li>In-batch duplicate roll number & APAAR detection.</li>
+              <li>Approved intake ceiling comparison.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Step 2: Validation Results & Commit Action -->
+        <div class="glass" style="padding:24px; border-radius:var(--radius-md); display:flex; flex-direction:column; gap:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:17px; font-weight:700; color:var(--c-ivory);">2. Batch Pre-Ingestion Summary</h3>
+            <span class="badge-pill badge-low" id="badgeValidationStatus">Waiting for upload</span>
+          </div>
+
+          <div id="batchStatsCard" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+            <div style="background:rgba(20, 24, 23, 0.75); padding:12px; border-radius:8px; border:1px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim);">Total Rows</div>
+              <div style="font-size:22px; font-weight:800; color:var(--c-ivory);" id="statTotalRows">--</div>
+            </div>
+            <div style="background:rgba(20, 24, 23, 0.75); padding:12px; border-radius:8px; border:1px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim);">Valid Rows</div>
+              <div style="font-size:22px; font-weight:800; color:var(--accent-emerald);" id="statValidRows">--</div>
+            </div>
+            <div style="background:rgba(20, 24, 23, 0.75); padding:12px; border-radius:8px; border:1px solid var(--border-subtle); text-align:center;">
+              <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim);">Errors Found</div>
+              <div style="font-size:22px; font-weight:800; color:var(--accent-rose);" id="statErrorRows">--</div>
+            </div>
+          </div>
+
+          <!-- Preview & Action Box -->
+          <div id="batchActionBox" style="display:none; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h4 style="font-size:13px; text-transform:uppercase; color:var(--text-dim);">Validated Preview Sample</h4>
+              <button id="btnDownloadErrorReport" class="btn btn-secondary" style="font-size:11px; padding:4px 8px; display:none;">
+                📥 Download Error Matrix (.CSV)
+              </button>
+            </div>
+
+            <div id="batchPreviewList" style="max-height:160px; overflow-y:auto; background:rgba(0,0,0,0.3); border-radius:8px; padding:8px; font-size:12px; font-family:'JetBrains Mono';">
+              <!-- Rendered via JS -->
+            </div>
+
+            <button id="btnCommitBatch" class="btn btn-success" style="padding:12px; font-size:14px; font-weight:700;">
+              💾 Confirm & Commit Valid Records to MySQL
+            </button>
+          </div>
+
+          <!-- Error Details List -->
+          <div id="batchErrorListBox" style="display:none; margin-top:auto;">
+            <h4 style="font-size:13px; text-transform:uppercase; color:var(--accent-rose); margin-bottom:8px;">Validation Discrepancies</h4>
+            <div id="batchErrorItems" style="max-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:6px; font-size:12px;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 4. INSTITUTION PORTAL: INTAKE MONITOR ==================== -->
+    <section id="view-institution-intake" class="view-section">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size:24px; font-weight:800;">Intake & Seat Allocation Monitor</h2>
+          <p style="color:var(--text-muted); font-size:14px;">Live comparison of approved intake versus actual student enrolment per programme.</p>
+        </div>
+        <a href="/api/v1/reports/intake.csv" class="btn btn-secondary" style="display:inline-flex; align-items:center; gap:8px;">
+          📊 Export Intake Report (CSV)
+        </a>
+      </div>
+
+      <!-- Programme Cards Grid -->
+      <div id="instIntakeGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(420px, 1fr)); gap:18px;">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- ==================== 5. AICTE ADMIN: NATIONAL DASHBOARD ==================== -->
+    <section id="view-admin-dashboard" class="view-section">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size:24px; font-weight:800;">AICTE Central Directorate Dashboard</h2>
+          <p style="color:var(--text-muted); font-size:14px;">National macro-metrics on student enrolments, approved intake capacity, and compliance alerts.</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <a href="/api/v1/reports/intake.csv" class="btn btn-secondary">📥 Export National Intake (CSV)</a>
+          <button class="btn btn-secondary" onclick="loadAdminDashboard()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Macro Metrics Row -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px;">
+        
+        <div class="glass" style="padding:18px; border-radius:var(--radius-md); border-left:4px solid var(--accent-cyan);">
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Registered Institutions</div>
+          <div style="font-size:28px; font-weight:800; color:var(--c-ivory); margin-top:4px;" id="adminStatInstCount">--</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Technical Colleges</div>
+        </div>
+
+        <div class="glass" style="padding:18px; border-radius:var(--radius-md); border-left:4px solid var(--accent-blue);">
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Approved Capacity</div>
+          <div style="font-size:28px; font-weight:800; color:var(--c-ivory); margin-top:4px;" id="adminStatApprovedCap">--</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Sanctioned Seats</div>
+        </div>
+
+        <div class="glass" style="padding:18px; border-radius:var(--radius-md); border-left:4px solid var(--accent-emerald);">
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Active Enrolments</div>
+          <div style="font-size:28px; font-weight:800; color:var(--accent-emerald); margin-top:4px;" id="adminStatActiveEnrol">--</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Enrolled Students</div>
+        </div>
+
+        <div class="glass" style="padding:18px; border-radius:var(--radius-md); border-left:4px solid var(--accent-purple);">
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim); font-weight:700;">National Utilization</div>
+          <div style="font-size:28px; font-weight:800; color:var(--accent-purple); margin-top:4px;" id="adminStatUtilization">--%</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Seat fill rate</div>
+        </div>
+
+        <div class="glass" style="padding:18px; border-radius:var(--radius-md); border-left:4px solid var(--accent-rose);">
+          <div style="font-size:11px; text-transform:uppercase; color:var(--text-dim); font-weight:700;">Flagged Anomalies</div>
+          <div style="font-size:28px; font-weight:800; color:var(--accent-rose); margin-top:4px;" id="adminStatAnomalies">--</div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">Awaiting Review</div>
+        </div>
+
+      </div>
+
+      <!-- National Programme Intake Overview Table -->
+      <div class="glass" style="border-radius:var(--radius-md); overflow:hidden;">
+        <div style="padding:16px 20px; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-size:16px; font-weight:700;">Approved Intake & Enrolment by Institution & Programme</h3>
+          <span style="font-size:12px; color:var(--text-muted);">Real-time aggregated calculations</span>
+        </div>
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>AICTE ID</th>
+              <th>Institution</th>
+              <th>Programme</th>
+              <th>Academic Year</th>
+              <th>Approved Seats</th>
+              <th>Total Permitted</th>
+              <th>Enrolled</th>
+              <th>Remaining</th>
+              <th>Utilization</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="adminIntakeTableBody">
+            <tr><td colspan="10" style="text-align:center; color:var(--text-dim);">Loading national programme records...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 6. AICTE ADMIN: ANOMALY REVIEW QUEUE ==================== -->
+    <section id="view-admin-anomalies" class="view-section">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size:24px; font-weight:800;">Anomalies & Duplicate Match Review Queue</h2>
+          <p style="color:var(--text-muted); font-size:14px;">Investigate cross-institution duplicate enrolments, intake limit breaches, and conflicting records.</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <a href="/api/v1/reports/anomalies.csv" class="btn btn-secondary">📥 Export Anomalies (CSV)</a>
+          <button class="btn btn-secondary" onclick="loadAdminAnomalies()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div class="glass" style="border-radius:var(--radius-md); overflow:hidden;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Severity</th>
+              <th>Finding Type</th>
+              <th>Title</th>
+              <th>Primary Institution</th>
+              <th>Target Institution / Details</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="anomaliesTableBody">
+            <tr><td colspan="8" style="text-align:center; color:var(--text-dim);">No anomalies flagged. System in full compliance.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Anomaly Review Action Modal -->
+      <div id="modalAnomalyAction" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:999; align-items:center; justify-content:center;">
+        <div class="glass" style="max-width:540px; width:90%; padding:24px; border-radius:var(--radius-md); border:1px solid var(--border-glow);">
+          <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;" id="modalAnomalyTitle">Review Anomaly</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;" id="modalAnomalyDesc">Description</p>
+          
+          <div style="background:rgba(20, 24, 23, 0.75); padding:10px; border-radius:8px; font-size:12px; margin-bottom:14px; font-family:'JetBrains Mono';" id="modalAnomalyEvidence">
+            <!-- Evidence JSON preview -->
+          </div>
+
+          <form id="formResolveAnomaly" style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Review Decision</label>
+              <select id="modalActionSelect" style="width:100%; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+                <option value="INVESTIGATING">Mark Under Investigation</option>
+                <option value="RESOLVED">Resolve (Rectified by Institutions)</option>
+                <option value="DISMISSED">Dismiss (False Positive / Authorized Transfer)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Official Reviewer Justification</label>
+              <textarea id="modalActionNotes" rows="3" placeholder="Enter mandatory review reasoning..." required style="width:100%; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;"></textarea>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+              <button type="button" class="btn btn-secondary" onclick="closeAnomalyModal()">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save Decision & Audit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 7. AUTHORIZED VERIFIER PORTAL ==================== -->
+    <section id="view-verifier-portal" class="view-section">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size:24px; font-weight:800;">Authorized Student Credential Verification</h2>
+        <p style="color:var(--text-muted); font-size:14px;">Verify student academic credentials with strict privacy preservation, data minimization, and tamper-evident receipts.</p>
+      </div>
+
+      <div class="grid-2">
+        
+        <!-- Verification Query Form -->
+        <div class="glass" style="padding:24px; border-radius:var(--radius-md); display:flex; flex-direction:column; gap:16px;">
+          <h3 style="font-size:17px; font-weight:700; color:var(--accent-emerald);">Initiate Verification Request</h3>
+
+          <form id="formVerificationQuery" style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Verification Query Mode</label>
+              <select id="vQueryType" style="width:100%; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+                <option value="ROLL_NO">Student Roll Number + Institution AICTE ID</option>
+                <option value="APAAR_ID">APAAR ID (12-Digit Reference)</option>
+                <option value="VERIFICATION_REF">Verification Reference Code (VR-XXXX)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;" id="lblQueryValue">Student Roll Number</label>
+              <input type="text" id="vQueryValue" placeholder="Enter student roll number" required style="width:100%; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+            </div>
+
+            <div id="vBoxInstitution">
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Institution AICTE Permanent ID</label>
+              <input type="text" id="vInstCode" placeholder="Enter Institution AICTE ID (e.g. 1-1097241811)" style="width:100%; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+            </div>
+
+            <div>
+              <label style="font-size:12px; color:var(--text-muted); display:block; margin-bottom:4px;">Student Date of Birth (Optional Matching Check)</label>
+              <input type="date" id="vDob" style="width:100%; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+            </div>
+
+            <button type="submit" class="btn btn-success" style="padding:12px; font-size:14px; font-weight:700; margin-top:6px;">
+              🔍 Verify Academic Credential
+            </button>
+          </form>
+
+          <div style="font-size:11px; color:var(--text-dim); background:rgba(0,0,0,0.3); padding:10px; border-radius:8px;">
+            🔒 <b>Privacy-Preserving Data Minimization:</b> Queries do NOT expose full raw APAAR, home address, or personal contact numbers. Rate limit of 30 queries per 10 minutes strictly enforced.
+          </div>
+        </div>
+
+        <!-- Verification Scoped Outcome Display -->
+        <div class="glass" style="padding:24px; border-radius:var(--radius-md); display:flex; flex-direction:column; gap:16px;">
+          <h3 style="font-size:17px; font-weight:700; color:var(--c-ivory);">Scoped Verification Outcome</h3>
+
+          <div id="verificationResultEmpty" style="padding:40px; text-align:center; color:var(--text-dim);">
+            <span style="font-size:36px; display:block; margin-bottom:8px;">📜</span>
+            Enter student details on the left to verify credentials.
+          </div>
+
+          <div id="verificationResultCard" style="display:none; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="badge-pill badge-emerald" id="vOutcomeStatus" style="font-size:14px; padding:6px 14px;">VERIFIED</span>
+              <span style="font-size:12px; color:var(--text-dim);" id="vOutcomeTimestamp">Timestamp</span>
+            </div>
+
+            <div style="background:rgba(20, 24, 23, 0.75); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:10px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+                <div>
+                  <span style="font-size:11px; text-transform:uppercase; color:var(--text-dim); display:block;">Student Name (Masked)</span>
+                  <b style="color:var(--c-ivory);" id="vResStudentName">--</b>
+                </div>
+                <div>
+                  <span style="font-size:11px; text-transform:uppercase; color:var(--text-dim); display:block;">Institution</span>
+                  <b style="color:var(--c-ivory);" id="vResInstName">--</b>
+                </div>
+                <div>
+                  <span style="font-size:11px; text-transform:uppercase; color:var(--text-dim); display:block;">Programme</span>
+                  <b style="color:var(--c-ivory);" id="vResProgName">--</b>
+                </div>
+                <div>
+                  <span style="font-size:11px; text-transform:uppercase; color:var(--text-dim); display:block;">Academic Year</span>
+                  <b style="color:var(--c-ivory);" id="vResYear">--</b>
+                </div>
+                <div>
+                  <span style="font-size:11px; text-transform:uppercase; color:var(--text-dim); display:block;">Enrolment Status</span>
+                  <span class="badge-pill badge-low" id="vResStatus">--</span>
+                </div>
+                <div>
+                  <span style="font-size:11px; text-transform:uppercase; color:var(--text-dim); display:block;">Attestation Source</span>
+                  <span style="color:var(--accent-cyan); font-weight:600;" id="vResSource">AICTE Attested</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="background:rgba(0,0,0,0.4); padding:12px; border-radius:8px; font-size:11px; font-family:'JetBrains Mono'; display:flex; flex-direction:column; gap:4px;">
+              <div><span style="color:var(--text-dim);">Verification Ref:</span> <b style="color:var(--accent-cyan);" id="vResRef">VR-XXXX</b></div>
+              <div><span style="color:var(--text-dim);">Cryptographic Hash:</span> <span style="color:var(--accent-emerald);" id="vResHash">--</span></div>
+            </div>
+
+            <div style="font-size:11px; color:var(--text-dim); border-top:1px solid var(--border-subtle); padding-top:10px;" id="vResDisclaimer">
+              ℹ️ <i>Notice: External APAAR verification is not configured. Only local validation has been completed against the authorized institutional repository.</i>
+            </div>
+
+            <button type="button" id="btnViewCertificateFromVerification" class="btn btn-primary" style="margin-top:4px; padding:10px; font-size:13px; font-weight:700; width:100%; display:none;">
+              🖨️ View & Print Official Attested Degree Certificate
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 8. TRUST LEDGER VIEW ==================== -->
+    <section id="view-ledger" class="view-section">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px;">
+        <div>
+          <h2 style="font-size:24px; font-weight:800;">Trust Ledger & Tamper-Evident Audit Chain</h2>
+          <p style="color:var(--text-muted); font-size:14px;">Every student batch upload, intake update, and verification decision is cryptographically chained with SHA-256 in MySQL.</p>
+        </div>
+        <button class="btn btn-primary" id="btnVerifyChain">🔍 Verify Hash Chain Integrity</button>
+      </div>
+
+      <div id="chainStatusBanner" style="display:none; padding:14px 20px; border-radius:var(--radius-md); margin-bottom:20px;"></div>
+
+      <div class="glass" style="border-radius:var(--radius-md); overflow:hidden;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Seq #</th>
+              <th>Actor</th>
+              <th>Action</th>
+              <th>Entity</th>
+              <th>Prev Hash</th>
+              <th>Chained Entry Hash</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="trustLedgerTableBody">
+            <tr><td colspan="7" style="text-align:center; color:var(--text-dim);">Loading ledger entries...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== 9. COPILOT VIEW ==================== -->
+    <section id="view-copilot" class="view-section">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size:24px; font-weight:800;">AICTE Handbook & APAAR Norms Copilot</h2>
+        <p style="color:var(--text-muted); font-size:14px;">Ask questions over official AICTE norms, student intake quotas, and statutory guidelines.</p>
+      </div>
+
+      <div class="copilot-container">
+        <div class="glass" style="padding:18px; border-radius:var(--radius-md); display:flex; flex-direction:column; gap:10px;">
+          <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text-dim);">Suggested Queries</div>
+          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">What are the rules for Tuition Fee Waiver (TFW) supernumerary seats?</button>
+          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">What are the rules for expansion of intake?</button>
+          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">What is the required Student-to-Faculty Ratio (SFR)?</button>
+          <button class="btn btn-secondary preset-btn" style="text-align:left; font-size:12px; padding:8px;">How are NRI admissions calculated against approved intake?</button>
+        </div>
+
+        <div class="glass chat-box">
+          <div class="chat-messages" id="chatMsgContainer">
+            <div class="chat-msg copilot">
+              <b>AICTE Handbook Copilot</b><br>
+              Ready to answer regulatory queries based on the AICTE Approval Process Handbook (2024-2027) and APAAR student norms.
+            </div>
+          </div>
+          <div style="padding:14px; border-top:1px solid var(--border-subtle); display:flex; gap:10px; background:rgba(20, 24, 23, 0.75);">
+            <input type="text" id="copilotTextInput" placeholder="Ask a question..." style="flex:1; padding:10px; border-radius:8px; background:#141716; color:var(--c-ivory); border:1px solid var(--border-subtle); font-size:13px;">
+            <button class="btn btn-primary" id="btnCopilotSend">Ask Copilot</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
