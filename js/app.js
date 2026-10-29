@@ -441,7 +441,7 @@ function onUserLoggedIn() {
   const navTabs = document.getElementById("appNavTabs");
   navContainer.style.display = "block";
 
-  const role = currentUser.role;
+  const role = (currentUser.role || "").toUpperCase();
 
   if (role === "COLLEGE" || role === "INSTITUTION_ADMIN") {
     navTabs.innerHTML = `
@@ -454,7 +454,7 @@ function onUserLoggedIn() {
     showView("view-institution-students");
     loadInstitutionStudents();
     loadMetadataOptions();
-  } else if (role === "ADMIN" || role === "SCRUTINY_OFFICER" || role === "SENIOR_OFFICER") {
+  } else if (role === "ADMIN" || role === "AICTE_ADMIN" || role === "SCRUTINY_OFFICER" || role === "SENIOR_OFFICER") {
     navTabs.innerHTML = `
       <button class="nav-tab-btn active" data-view="view-admin-dashboard">📊 National Intake Dashboard</button>
       <button class="nav-tab-btn" data-view="view-admin-anomalies">⚠️ Anomaly & Duplicate Review Queue</button>
